@@ -1,0 +1,29 @@
+name: 🚀 Tarea de Despliegue
+
+on:
+   push:
+     branches: 
+      - main
+
+jobs:
+  deploy:
+    name: 🎉 Trabajo de Despliegue
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Obteniendo el código más reciente
+        uses: actions/checkout@v4
+
+      - name: 📂 Sincronizando archivos via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp-misaelgaray.alwaysdata.net # Change if using another host
+          username: misaelgaray
+          password: Mgm1927.
+          server-dir: www/ # Replace with your correct path
+          protocol: ftps
+          timeout: 86400000
+          log-level: standard
+          exclude: |
+           .git/**
+           .github/**

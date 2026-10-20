@@ -1,0 +1,4 @@
+.env
+config.local.php
+/media/*
+!/media/.htaccess
