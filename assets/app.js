@@ -138,7 +138,30 @@
     const bubble = document.createElement('div'); bubble.className = 'message-bubble';
     if (role === 'assistant') bubble.innerHTML = markdown(text); else bubble.textContent = text;
     if (options.imageUrl) { const img = document.createElement('img'); img.src = options.imageUrl; img.alt = 'Imagen adjunta'; img.loading = 'lazy'; bubble.appendChild(img); }
-    if (options.generatedImage) { const img = document.createElement('img'); img.src = options.generatedImage; img.alt = 'Resultado de Unsplash'; img.loading = 'lazy'; bubble.appendChild(img); const a = document.createElement('a'); a.className = 'mini-action'; a.href = options.generatedImage; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Abrir imagen original'; a.style.display = 'inline-block'; a.style.marginTop = '10px'; bubble.appendChild(a); }
+    if (options.generatedImage) {
+      const img = document.createElement('img'); img.src = options.generatedImage; img.alt = 'Imagen encontrada'; img.loading = 'lazy'; bubble.appendChild(img);
+      const attribution = options.attribution;
+      if (attribution && typeof attribution === 'object') {
+        const details = document.createElement('details'); details.className = 'image-attribution';
+        const summary = document.createElement('summary'); summary.textContent = 'Ver créditos (opcional)'; details.appendChild(summary);
+        const rows = document.createElement('div'); rows.className = 'image-attribution-content';
+        const addCredit = (label, value, href) => {
+          if (!value) return;
+          const row = document.createElement('div'); row.className = 'image-attribution-row';
+          row.appendChild(document.createTextNode(`${label}: `));
+          let safeUrl = '';
+          try { const parsed = new URL(href); if (parsed.protocol === 'https:' || parsed.protocol === 'http:') safeUrl = parsed.href; } catch {}
+          if (safeUrl) { const link = document.createElement('a'); link.href = safeUrl; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = value; row.appendChild(link); }
+          else row.appendChild(document.createTextNode(value));
+          rows.appendChild(row);
+        };
+        addCredit('Autor', attribution.photographer, attribution.photographer_url);
+        addCredit('Fuente', attribution.provider, attribution.provider_url);
+        addCredit('Licencia', attribution.license, attribution.license_url);
+        addCredit('Ficha de la imagen', 'Ver imagen original', attribution.photo_url);
+        details.appendChild(rows); bubble.appendChild(details);
+      }
+    }
     if (options.audioUrl) { const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'none'; audio.src = options.audioUrl; bubble.appendChild(audio); }
     if (options.speak && role === 'assistant') speakText(options.spokenText || text);
     if (options.showActions && text) {
@@ -187,12 +210,12 @@
     if (state.busy) return;
     const prompt = (promptOverride ?? els.prompt.value).trim();
     if (!prompt) { toast('Escribe una descripción de la imagen que quieres crear.'); els.prompt.focus(); return; }
-    appendMessage('user', `Buscar imagen: ${prompt}`); showWorking('Buscando imágenes en Unsplash…');
+    appendMessage('user', `Buscar imagen: ${prompt}`); showWorking('Buscando imágenes…');
     try {
       const form = new FormData(); form.set('prompt', prompt);
       const data = await api('image', form);
       els.prompt.value = ''; autosize();
-      appendMessage('assistant', data.caption || 'Imagen lista.', { generatedImage: data.image_url, showActions: true, speak: els.voiceToggle.checked, spokenText: data.speech_caption || data.caption });
+      appendMessage('assistant', data.caption || 'Aquí tienes la imagen.', { generatedImage: data.image_url, attribution: data.attribution || null, showActions: true, speak: els.voiceToggle.checked, spokenText: data.speech_caption || data.caption });
       if (data.history_count !== undefined) $('memoryStatus').textContent = `${data.history_count} respuestas guardadas`;
     } catch (error) { if (error?.name === 'AbortError') appendMessage('assistant', 'Búsqueda detenida.'); else appendMessage('assistant', formatRequestError('No pude buscar la imagen.', error)); }
     finally { hideWorking(); els.prompt.focus(); }

@@ -63,3 +63,4 @@
 }
 
 .cancel-request-button{margin-left:auto;flex-shrink:0;padding:6px 11px;border:1px solid rgba(255,140,160,.38);border-radius:8px;background:rgba(255,100,130,.1);color:#ffd5dc;font-size:11px;font-weight:600;transition:background .18s,border-color .18s}.cancel-request-button:hover:not(:disabled){background:rgba(255,100,130,.2);border-color:rgba(255,140,160,.72)}.cancel-request-button:disabled{opacity:.75;cursor:wait}
+.image-attribution{margin-top:10px;font-size:11px;color:var(--muted)}.image-attribution summary{width:max-content;cursor:pointer;color:#9eacc4}.image-attribution-content{display:grid;gap:4px;margin-top:7px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:rgba(12,17,28,.45)}.image-attribution-row a{color:var(--cyan);text-decoration:underline}
