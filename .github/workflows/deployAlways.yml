@@ -1,29 +1,44 @@
-name: 🚀 Tarea de Despliegue
+name: Deploy to Alwaysdata
 
 on:
-   push:
-     branches: 
+  push:
+    branches:
       - main
 
 jobs:
   deploy:
-    name: 🎉 Trabajo de Despliegue
+    name: Deploy via SFTP
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🚚 Obteniendo el código más reciente
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📂 Sincronizando archivos via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Prepare website files
+        run: |
+          mkdir -p deploy
+          cp api.php index.php schema.sql .htaccess deploy/
+          cp -r assets deploy/
+
+      - name: Deploy website files to Alwaysdata
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
-          server: ftp-misaelgaray.alwaysdata.net
+          server: ssh-misaelgaray.alwaysdata.net
           username: misaelgaray
-          password: Mgm1927.
-          server-dir: www/ # Replace with your correct path
-          protocol: ftps
-          timeout: 86400000
-          log-level: standard
-          exclude: |
-           .git/**
-           .github/**
+          port: 22
+          password: ${{ secrets.ALWAYSDATA_SSH_PASSWORD }}
+          local_path: './deploy/*'
+          remote_path: '/home/misaelgaray/www/'
+          sftp_only: true
+          delete_remote_files: false
+
+      - name: Deploy hidden Apache configuration
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ssh-misaelgaray.alwaysdata.net
+          username: misaelgaray
+          port: 22
+          password: ${{ secrets.ALWAYSDATA_SSH_PASSWORD }}
+          local_path: './deploy/.htaccess'
+          remote_path: '/home/misaelgaray/www/'
+          sftp_only: true
+          delete_remote_files: false
